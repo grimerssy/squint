@@ -1,0 +1,15 @@
+[package]
+name = "squint"
+version = "0.1.0"
+description = "Encode sequential integer ids as random looking strings"
+authors = ["Stanislav Stoyanov <grimerssy@gmail.com>"]
+license = "MIT OR Apache-2.0"
+edition = "2021"
+rust-version = "1.72"
+readme = "README.md"
+documentation = "https://docs.rs/squint"
+repository = "https://github.com/grimerssy/squint"
+keywords = ["sql", "id", "encode", "obfuscate"]
+categories = ["cryptography", "encoding", "no-std"]
+
+[dependencies]
