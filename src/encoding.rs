@@ -1,18 +1,15 @@
-use core::{fmt, iter};
-
 use crate::error::Error;
 
 static ALPHABET: &str = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-pub fn encode(n: u128, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+pub fn encode(n: u128) -> impl Iterator<Item = char> {
     let base = ALPHABET.len() as u128;
     let bytes = ALPHABET.as_bytes();
-    iter::successors(Some(n), |&n| match n / base {
+    core::iter::successors(Some(n), move |&n| match n / base {
         0 => None,
         d => Some(d),
     })
-    .map(|i| bytes[(i % base) as usize] as char)
-    .try_for_each(|c| write!(f, "{c}"))
+    .map(move |i| bytes[(i % base) as usize] as char)
 }
 
 pub fn decode(s: &str) -> Result<u128, Error> {
@@ -28,6 +25,8 @@ pub fn decode(s: &str) -> Result<u128, Error> {
 
 #[cfg(test)]
 mod tests {
+    use proptest::prelude::*;
+
     use super::*;
 
     #[test]
@@ -37,5 +36,15 @@ mod tests {
             ('a'..='z').chain('A'..='Z').collect::<String>().as_str(),
             "should contain lower and uppercase alphabetic characters"
         )
+    }
+
+    #[test]
+    fn encode_decode_identity() {
+        proptest!(|(n in u128::MIN..)| {
+            let encoded = encode(n).collect::<String>();
+            let decoded = decode(&encoded);
+            prop_assert!(decoded.is_ok());
+            prop_assert_eq!(n, decoded.unwrap());
+        });
     }
 }

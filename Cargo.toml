@@ -14,3 +14,12 @@ categories = ["cryptography", "encoding", "no-std"]
 
 [dependencies]
 aes = "0.8.4"
+
+[dev-dependencies]
+proptest = "1.5.0"
+
+[profile.test.package.proptest]
+opt-level = 3
+
+[profile.test.package.rand_chacha]
+opt-level = 3

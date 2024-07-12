@@ -41,7 +41,7 @@ impl<const TAG: u64> Id<TAG> {
 
 impl<const TAG: u64> fmt::Display for Id<TAG> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        encode(self.0, f)
+        encode(self.0).try_for_each(|c| write!(f, "{c}"))
     }
 }
 
