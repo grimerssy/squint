@@ -3,8 +3,6 @@ use aes::{
     Aes128,
 };
 
-use crate::error::Error;
-
 pub fn encrypt(tag: u64, id: i64, cipher: &Aes128) -> u128 {
     let tagged = concat(tag, id);
     let mut bytes = tagged.into();
@@ -12,12 +10,12 @@ pub fn encrypt(tag: u64, id: i64, cipher: &Aes128) -> u128 {
     u128::from_le_bytes(bytes.into())
 }
 
-pub fn decrypt(expected_tag: u64, id: u128, cipher: &Aes128) -> Result<i64, Error> {
+pub fn decrypt(expected_tag: u64, id: u128, cipher: &Aes128) -> crate::Result<i64> {
     let mut bytes = id.to_le_bytes().into();
     cipher.decrypt_block(&mut bytes);
     match bisect(bytes.into()) {
         (tag, id) if tag == expected_tag => Ok(id),
-        _ => Err(Error::WrongTag),
+        _ => Err(crate::Error::WrongTag),
     }
 }
 

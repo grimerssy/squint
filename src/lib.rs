@@ -1,9 +1,15 @@
 #![forbid(unsafe_code)]
 #![cfg_attr(not(test), no_std)]
 
+#[cfg(feature = "std")]
+extern crate std;
+
 mod encoding;
 mod encryption;
 mod error;
+
+pub use self::error::Error;
+pub type Result<T> = core::result::Result<T, Error>;
 
 use core::{fmt, str::FromStr};
 
@@ -12,7 +18,6 @@ use aes::Aes128;
 use self::{
     encoding::{decode, encode},
     encryption::{decrypt, encrypt},
-    error::Error,
 };
 
 #[derive(Clone, Copy)]
@@ -34,7 +39,7 @@ impl<const TAG: u64> Id<TAG> {
         Self(encrypt(TAG, id, cipher))
     }
 
-    pub fn to_raw(self, cipher: &Aes128) -> Result<i64, Error> {
+    pub fn to_raw(self, cipher: &Aes128) -> Result<i64> {
         decrypt(TAG, self.0, cipher)
     }
 }
@@ -54,7 +59,7 @@ impl<const TAG: u64> fmt::Debug for Id<TAG> {
 impl<const TAG: u64> FromStr for Id<TAG> {
     type Err = Error;
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
+    fn from_str(s: &str) -> Result<Self> {
         decode(s).map(Self)
     }
 }

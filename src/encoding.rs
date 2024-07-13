@@ -1,5 +1,3 @@
-use crate::error::Error;
-
 static ALPHABET: &str = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 pub fn encode(n: u128) -> impl Iterator<Item = char> {
@@ -12,14 +10,14 @@ pub fn encode(n: u128) -> impl Iterator<Item = char> {
     .map(move |i| bytes[(i % base) as usize] as char)
 }
 
-pub fn decode(s: &str) -> Result<u128, Error> {
+pub fn decode(s: &str) -> crate::Result<u128> {
     let base = ALPHABET.len() as u128;
     s.chars()
         .map(|c| ALPHABET.chars().position(|a| c == a))
         .enumerate()
         .try_fold(0, |acc, (i, n)| match n {
             Some(n) => Ok(acc + n as u128 * base.pow(i as u32)),
-            None => Err(Error::UnknownCharacter),
+            None => Err(crate::Error::UnknownCharacter),
         })
 }
 

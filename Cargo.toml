@@ -12,6 +12,9 @@ repository = "https://github.com/grimerssy/squint"
 keywords = ["sql", "id", "encode", "obfuscate"]
 categories = ["cryptography", "encoding", "no-std"]
 
+[features]
+std = []
+
 [dependencies]
 aes = "0.8.4"
 
