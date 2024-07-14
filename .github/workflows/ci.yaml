@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches: main
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: main
+
+env:
+  RUSTFLAGS: -Dwarnings
+  CARGO_INCREMENTAL: 0
+  CARGO_NET_RETRY: 10
+  RUSTUP_MAX_RETRIES: 10
+  RUST_BACKTRACE: short
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - run: cargo clippy --no-default-features
+      - run: cargo clippy --tests
+
+  test:
+    name: test ${{matrix.os}}-${{ matrix.rust }}
+    needs: check
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu]
+        rust: [1.72.0, stable, beta, nightly]
+        include:
+          - os: windows
+            rust: stable
+          - os: macos
+            rust: stable
+    runs-on: ${{ matrix.os }}-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.rust }}
+      - run: cargo test --no-run
+      - run: cargo test
+
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      - run: cargo fmt --check
