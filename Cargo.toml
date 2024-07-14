@@ -13,6 +13,7 @@ keywords = ["sql", "id", "encode", "obfuscate"]
 categories = ["cryptography", "encoding", "no-std"]
 
 [features]
+default = ["std"]
 std = []
 
 [dependencies]
