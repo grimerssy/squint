@@ -1,29 +1,48 @@
+use crate::Error;
+
 static ALPHABET: &str = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
+static RADIX: u128 = ALPHABET.len() as u128;
+
 pub fn encode(n: u128) -> impl Iterator<Item = char> {
-    let base = ALPHABET.len() as u128;
-    let bytes = ALPHABET.as_bytes();
-    core::iter::successors(Some(n), move |&n| match n / base {
+    core::iter::successors(Some(n), move |&prev| match prev / RADIX {
         0 => None,
-        d => Some(d),
+        next => Some(next),
     })
-    .map(move |i| bytes[(i % base) as usize] as char)
+    .map(|x| x % RADIX)
+    .map(to_digit)
 }
 
-pub fn decode(s: &str) -> crate::Result<u128> {
-    let base = ALPHABET.len() as u128;
-    s.chars()
-        .map(|c| ALPHABET.chars().position(|a| c == a))
+pub fn decode(digits: impl Iterator<Item = char>) -> crate::Result<u128> {
+    digits
         .enumerate()
-        .try_fold(0, |acc, (i, n)| match n {
-            Some(n) => Ok(acc + n as u128 * base.pow(i as u32)),
-            None => Err(crate::Error::UnknownCharacter),
+        .map(|(i, digit)| {
+            let digit = parse_digit(digit)?;
+            RADIX
+                .checked_pow(i as u32)
+                .and_then(|value| value.checked_mul(digit))
+                .ok_or(Error::Overflow)
         })
+        .try_fold(0, |acc, n| {
+            n.and_then(|n| n.checked_add(acc).ok_or(crate::Error::Overflow))
+        })
+}
+
+fn to_digit(digit: u128) -> char {
+    ALPHABET.as_bytes()[digit as usize] as char
+}
+
+fn parse_digit(digit: char) -> crate::Result<u128> {
+    ALPHABET
+        .chars()
+        .position(|x| x == digit)
+        .map(|i| i as u128)
+        .ok_or(Error::UnknownCharacter)
 }
 
 #[cfg(test)]
 mod tests {
-    use proptest::prelude::*;
+    use proptest::{prelude::*, property_test, sample::SizeRange};
 
     use super::*;
 
@@ -36,13 +55,25 @@ mod tests {
         )
     }
 
+    #[property_test]
+    fn encode_decode_identity(n: u128) {
+        let encoded = encode(n);
+        let decoded = decode(encoded);
+        prop_assert!(decoded.is_ok());
+        prop_assert_eq!(n, decoded.unwrap());
+    }
+
+    #[property_test]
+    fn decode_unsanitized(s: String) {
+        decode(s.chars()).ok()
+    }
+
     #[test]
-    fn encode_decode_identity() {
-        proptest!(|(n in u128::MIN..)| {
-            let encoded = encode(n).collect::<String>();
-            let decoded = decode(&encoded);
-            prop_assert!(decoded.is_ok());
-            prop_assert_eq!(n, decoded.unwrap());
+    fn decode_sanitized() {
+        let sanitized_string = prop::collection::vec(0..RADIX, SizeRange::default())
+            .prop_map(|digits| digits.into_iter().map(to_digit).collect::<String>());
+        proptest!(|(s in sanitized_string)| {
+            decode(s.chars()).ok();
         });
     }
 }

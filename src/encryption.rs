@@ -38,33 +38,24 @@ fn bisect(bytes: [u8; 16]) -> (u64, i64) {
 #[cfg(test)]
 mod tests {
     use aes::cipher::KeyInit;
-    use proptest::{array, prelude::*};
+    use proptest::{prelude::*, property_test};
 
     use super::*;
 
-    proptest! {
-        #[test]
-        fn concat_bisect_identity(
-            tag in u64::MIN..u64::MAX,
-            id in 1_i64..i64::MAX
-        ) {
-            let tagged_bytes = concat(tag, id);
-            let (extracted_tag, extracted_id) = bisect(tagged_bytes);
-            prop_assert_eq!(tag, extracted_tag);
-            prop_assert_eq!(id, extracted_id);
-        }
+    #[property_test]
+    fn concat_bisect_identity(tag: u64, id: i64) {
+        let tagged_bytes = concat(tag, id);
+        let (extracted_tag, extracted_id) = bisect(tagged_bytes);
+        prop_assert_eq!(tag, extracted_tag);
+        prop_assert_eq!(id, extracted_id);
+    }
 
-        #[test]
-        fn encrypt_decrypt_identity(
-            tag in u64::MIN..u64::MAX,
-            id in 1_i64..i64::MAX,
-            key in array::uniform16(0_u8..)
-        ) {
-            let cipher = Aes128::new(&key.into());
-            let encrypted = encrypt(tag, id, &cipher);
-            let decrypted = decrypt(tag, encrypted, &cipher);
-            prop_assert!(decrypted.is_ok());
-            prop_assert_eq!(decrypted.unwrap(), id);
-        }
+    #[property_test]
+    fn encrypt_decrypt_identity(tag: u64, id: i64, key: [u8; 16]) {
+        let cipher = Aes128::new(&key.into());
+        let encrypted = encrypt(tag, id, &cipher);
+        let decrypted = decrypt(tag, encrypted, &cipher);
+        prop_assert!(decrypted.is_ok());
+        prop_assert_eq!(decrypted.unwrap(), id);
     }
 }

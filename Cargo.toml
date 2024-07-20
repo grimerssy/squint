@@ -20,7 +20,7 @@ std = []
 aes = "0.8.4"
 
 [dev-dependencies]
-proptest = "1.5.0"
+proptest = { version = "1.5.0", features = ["attr-macro"] }
 
 [profile.test.package.proptest]
 opt-level = 3

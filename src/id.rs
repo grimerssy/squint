@@ -47,6 +47,6 @@ impl<const TAG: u64> FromStr for Id<TAG> {
     type Err = crate::Error;
 
     fn from_str(s: &str) -> crate::Result<Self> {
-        decode(s).map(Self)
+        decode(s.chars()).map(Self)
     }
 }

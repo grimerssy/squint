@@ -1,9 +1,11 @@
 use core::fmt;
 
 #[derive(Debug)]
+#[non_exhaustive]
 pub enum Error {
     WrongTag,
     UnknownCharacter,
+    Overflow,
 }
 
 impl fmt::Display for Error {
@@ -11,6 +13,7 @@ impl fmt::Display for Error {
         match self {
             Self::WrongTag => f.write_str("id has an invalid tag"),
             Self::UnknownCharacter => f.write_str("id contains invalid characters"),
+            Self::Overflow => f.write_str("id is too long"),
         }
     }
 }
