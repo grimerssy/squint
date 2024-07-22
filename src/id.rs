@@ -7,7 +7,7 @@ use crate::{
     encryption::{decrypt, encrypt},
 };
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub struct Id<const TAG: u64 = 0>(u128);
 
 pub const fn tag(s: &str) -> u64 {
