@@ -1,6 +1,6 @@
 use crate::Error;
 
-static ALPHABET: &str = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+static ALPHABET: &str = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
 
 static RADIX: u128 = ALPHABET.len() as u128;
 
@@ -48,11 +48,13 @@ mod tests {
 
     #[test]
     fn alphabet_typos() {
-        assert_eq!(
-            ALPHABET,
-            ('a'..='z').chain('A'..='Z').collect::<String>().as_str(),
-            "should contain lower and uppercase alphabetic characters"
-        )
+        let blacklist = ['I', 'O', 'l', '0'];
+        let base58 = ('0'..='9')
+            .chain('A'..='Z')
+            .chain('a'..='z')
+            .filter(|c| !blacklist.contains(c))
+            .collect::<String>();
+        assert_eq!(ALPHABET, &base58, "should contain valid base58 charset");
     }
 
     #[property_test]
@@ -65,7 +67,7 @@ mod tests {
 
     #[property_test]
     fn decode_unsanitized(s: String) {
-        decode(s.chars()).ok()
+        decode(s.chars()).ok();
     }
 
     #[test]
