@@ -14,8 +14,10 @@ even though the underlying integer value is the same).
 Basic example
 
 ```rust
-use aes::{cipher::KeyInit, Aes128};
-use squint::Id;
+use squint::{
+    aes::{cipher::KeyInit, Aes128},
+    Id,
+};
 
 let key = [0; 16];
 let cipher = Aes128::new(&key.into());
@@ -34,8 +36,10 @@ assert_eq!(decoded, 1);
 Different ID types
 
 ```rust
-use aes::{cipher::KeyInit, Aes128};
-use squint::{tag, Id};
+use squint::{
+    aes::{cipher::KeyInit, Aes128},
+    tag, Id,
+};
 
 type UserId = Id<{ tag("user") }>;
 

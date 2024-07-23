@@ -10,6 +10,8 @@ mod encryption;
 mod error;
 mod id;
 
+pub use aes;
+
 pub use self::{
     error::Error,
     id::{tag, Id},
