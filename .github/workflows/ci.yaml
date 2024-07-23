@@ -16,14 +16,18 @@ env:
 
 jobs:
   check:
+    name: check ${{ matrix.features }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        features: ["", "std", "zeroize", "std,zeroize"]
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy
-      - run: cargo clippy --no-default-features
-      - run: cargo clippy --tests
+      - run: cargo clippy --no-default-features -F "${{ matrix.features }}" --tests
 
   test:
     name: test ${{matrix.os}}-${{ matrix.rust }}
@@ -44,8 +48,8 @@ jobs:
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.rust }}
-      - run: cargo test --no-run
-      - run: cargo test
+      - run: cargo test --all-features --no-run
+      - run: cargo test --all-features
 
   format:
     runs-on: ubuntu-latest

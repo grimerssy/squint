@@ -15,6 +15,7 @@ categories = ["cryptography", "encoding", "no-std"]
 [features]
 default = ["std"]
 std = []
+zeroize = ["aes/zeroize"]
 
 [dependencies]
 aes = "0.8.4"
