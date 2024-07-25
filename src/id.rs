@@ -33,7 +33,9 @@ impl<const TAG: u64> Id<TAG> {
 
 impl<const TAG: u64> fmt::Display for Id<TAG> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        encode(self.0).try_for_each(|c| write!(f, "{c}"))
+        encode(self.0)
+            .into_iter()
+            .try_for_each(|c| write!(f, "{c}"))
     }
 }
 
@@ -47,6 +49,6 @@ impl<const TAG: u64> FromStr for Id<TAG> {
     type Err = crate::Error;
 
     fn from_str(s: &str) -> crate::Result<Self> {
-        decode(s.chars()).map(Self)
+        decode(s).map(Self)
     }
 }

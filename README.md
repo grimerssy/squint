@@ -24,7 +24,7 @@ let cipher = Aes128::new(&key.into());
 
 let id: Id = Id::new(1, &cipher);
 let encoded = id.to_string();
-assert_eq!(&encoded, "xZV3JT8xVMefhiyrkTsd4T");
+assert_eq!(&encoded, "xZV3JT8xVMefhiyrkTsd4T2");
 
 let decoded = encoded
     .parse()
@@ -112,4 +112,3 @@ are similar to UUID relative to this crate
 ##### Cons
 
 -   Increased code complexity
--   Can be quite short, though unlikely

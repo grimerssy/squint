@@ -7,6 +7,8 @@
 
 ### Changed
 
+-   pad encoded IDs to fixed length
+
 ### Fixed
 
 # 0.1.2 (July 22, 2024)
