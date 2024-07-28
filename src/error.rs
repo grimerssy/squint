@@ -6,7 +6,8 @@ pub enum Error {
     WrongTag,
     UnknownCharacter,
     Overflow,
-    NoPadding,
+    WrongPadding,
+    InvalidLength,
 }
 
 impl fmt::Display for Error {
@@ -15,7 +16,8 @@ impl fmt::Display for Error {
             Self::WrongTag => f.write_str("id has an invalid tag"),
             Self::UnknownCharacter => f.write_str("id contains invalid characters"),
             Self::Overflow => f.write_str("id is too long"),
-            Self::NoPadding => f.write_str("id is in an unexpected format"),
+            Self::WrongPadding => f.write_str("encoding padding is wrong"),
+            Self::InvalidLength => f.write_str("id is of invalid length"),
         }
     }
 }
