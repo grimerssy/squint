@@ -2,6 +2,14 @@
 
 ### Added
 
+### Changed
+
+### Fixed
+
+# 0.1.3 (28 July, 2024)
+
+### Added
+
 -   reexport of aes
 -   zeroize feature
 
