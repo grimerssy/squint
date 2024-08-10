@@ -4,6 +4,9 @@
 
 ### Changed
 
+-   get rid of too expressive error variants
+-   improve parsing performance
+
 ### Fixed
 
 # 0.1.3 (28 July, 2024)

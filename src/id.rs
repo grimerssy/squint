@@ -1,18 +1,22 @@
-use core::{fmt, str::FromStr};
+use core::{
+    fmt::{self, Write},
+    str::FromStr,
+};
 
 use aes::Aes128;
 
 use crate::{
-    encoding::{decode, encode},
+    encoding::{parse, stringify},
     encryption::{decrypt, encrypt},
+    error::Error,
 };
 
 #[derive(Clone, Copy, PartialEq, Eq)]
-pub struct Id<const TAG: u64 = 0>(u128);
+pub struct Id<const TAG: u64 = 0>([u8; 16]);
 
 pub const fn tag(s: &str) -> u64 {
     let bytes = s.as_bytes();
-    let mut result = 0u64;
+    let mut result = 0;
     let mut i = 0;
     while i < bytes.len() {
         result |= (bytes[i] as u64) << (8 * i);
@@ -27,15 +31,16 @@ impl<const TAG: u64> Id<TAG> {
     }
 
     pub fn to_raw(self, cipher: &Aes128) -> crate::Result<i64> {
-        decrypt(TAG, self.0, cipher)
+        match decrypt(self.0, cipher) {
+            (tag, id) if tag == TAG => Ok(id),
+            _ => Err(Error::TagMismatch),
+        }
     }
 }
 
 impl<const TAG: u64> fmt::Display for Id<TAG> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        encode(self.0)
-            .into_iter()
-            .try_for_each(|c| write!(f, "{c}"))
+        stringify(self.0).try_for_each(|c| f.write_char(c))
     }
 }
 
@@ -49,6 +54,6 @@ impl<const TAG: u64> FromStr for Id<TAG> {
     type Err = crate::Error;
 
     fn from_str(s: &str) -> crate::Result<Self> {
-        decode(s).map(Self)
+        parse(s).map(Self).ok_or(Error::InvalidFormat)
     }
 }

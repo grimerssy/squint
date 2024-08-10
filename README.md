@@ -50,8 +50,9 @@ let cipher = Aes128::new(&key.into());
 
 let user_id = UserId::new(1, &cipher);
 let crate_id = CrateId::new(1, &cipher);
-// comparing IDs directly causes a compilation error
-assert_ne!(&user_id.to_string(), &crate_id.to_string());
+
+assert_eq!(&user_id.to_string(), "hyu17dvJtxff4YXs8ZoqoH2");
+assert_eq!(&crate_id.to_string(), "sT6MYEi1knyw8RBHrk1ShW2");
 ```
 
 # Comparison

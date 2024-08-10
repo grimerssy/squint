@@ -1,20 +1,19 @@
 use core::iter;
 
-use crate::Error;
-
-const ENCODING_LENGTH: usize = MAX_UNPADDED_LEN + PADDING_SIZE_LEN;
-
 const MAX_UNPADDED_LEN: usize = 22;
 
 const PADDING_SIZE_LEN: usize = 1;
 
-static ALPHABET: &str = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+const ENCODING_LENGTH: usize = MAX_UNPADDED_LEN + PADDING_SIZE_LEN;
+
+static ALPHABET: &[u8] = b"123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
 
 static RADIX: u128 = ALPHABET.len() as u128;
 
-pub fn encode(n: u128) -> [char; ENCODING_LENGTH] {
-    let mut digits = <[char; ENCODING_LENGTH]>::default();
-    let mut writer = digits.iter_mut();
+pub fn stringify(block: [u8; 16]) -> impl Iterator<Item = char> {
+    let mut buffer = <[u8; ENCODING_LENGTH]>::default();
+    let mut writer = buffer.iter_mut();
+    let n = u128::from_le_bytes(block);
     let unpadded = digits_of(n)
         .zip(writer.by_ref())
         .map(|(digit, w)| *w = digit)
@@ -22,18 +21,18 @@ pub fn encode(n: u128) -> [char; ENCODING_LENGTH] {
     gen_padding(n, ENCODING_LENGTH - unpadded)
         .zip(writer)
         .for_each(|(digit, w)| *w = digit);
-    digits
+    buffer.into_iter().map(char::from)
 }
 
-pub fn decode(digits: &str) -> crate::Result<u128> {
-    if digits.chars().count() != ENCODING_LENGTH {
-        return Err(Error::InvalidLength);
-    }
-    let mut digits = digits.chars();
+pub fn parse(digits: &str) -> Option<[u8; 16]> {
+    let mut digits = match digits {
+        s if s.len() != ENCODING_LENGTH => None,
+        s => Some(s.bytes()),
+    }?;
     let padding_size = digits.by_ref().rev().take(PADDING_SIZE_LEN);
     let padding_size = match parse_number(padding_size) {
-        Ok(0) | Err(_) => Err(Error::WrongPadding),
-        Ok(size) => Ok(size as usize),
+        Some(0) | None => None,
+        Some(size) => Some(size as usize),
     }?;
     let encoding_size = ENCODING_LENGTH
         .checked_sub(padding_size)
@@ -41,45 +40,44 @@ pub fn decode(digits: &str) -> crate::Result<u128> {
     let n = parse_number(digits.by_ref().take(encoding_size))?;
     let filler_padding = gen_padding(n, padding_size).take(padding_size - PADDING_SIZE_LEN);
     if digits.eq(filler_padding) {
-        Ok(n)
+        Some(n.to_le_bytes())
     } else {
-        Err(Error::WrongPadding)
+        None
     }
 }
 
-fn digits_of(n: u128) -> impl Iterator<Item = char> {
+fn digits_of(n: u128) -> impl Iterator<Item = u8> {
     iter::successors(Some(n), move |&n| match n / RADIX {
         0 => None,
         n => Some(n),
     })
-    .map(|x| x % RADIX)
-    .map(to_digit)
+    .map(last_digit_of)
 }
 
-fn to_digit(digit: u128) -> char {
-    ALPHABET.as_bytes()[digit as usize] as char
+fn last_digit_of(n: u128) -> u8 {
+    let digit = n % RADIX;
+    ALPHABET[digit as usize]
 }
 
-fn gen_padding(seed: u128, size: usize) -> impl Iterator<Item = char> {
+fn gen_padding(seed: u128, size: usize) -> impl Iterator<Item = u8> {
     iter::successors(Some(seed.max(u128::MAX - seed)), |n| Some(n ^ (n << 1)))
         .flat_map(digits_of)
         .take(size - PADDING_SIZE_LEN)
-        .chain(encode_padding_size(size))
+        .chain(encode_padding_size(size as u128))
 }
 
-fn encode_padding_size(size: usize) -> [char; PADDING_SIZE_LEN] {
-    let mut digits = [to_digit(0); PADDING_SIZE_LEN];
-    let encoded_size = || digits_of(size as u128);
-    let leading_zeroes = PADDING_SIZE_LEN - encoded_size().count();
+fn encode_padding_size(size: u128) -> [u8; PADDING_SIZE_LEN] {
+    let mut digits = [last_digit_of(0); PADDING_SIZE_LEN];
+    let leading_zeroes = PADDING_SIZE_LEN - digits_of(size).count();
     digits
         .iter_mut()
         .skip(leading_zeroes)
-        .zip(encoded_size())
+        .zip(digits_of(size))
         .for_each(|(w, digit)| *w = digit);
     digits
 }
 
-fn parse_number(digits: impl Iterator<Item = char>) -> crate::Result<u128> {
+fn parse_number(digits: impl Iterator<Item = u8>) -> Option<u128> {
     digits
         .enumerate()
         .map(|(i, digit)| {
@@ -87,24 +85,28 @@ fn parse_number(digits: impl Iterator<Item = char>) -> crate::Result<u128> {
             RADIX
                 .checked_pow(i as u32)
                 .and_then(|value| value.checked_mul(digit))
-                .ok_or(Error::Overflow)
         })
-        .try_fold(0, |acc, n| {
-            n.and_then(|n| n.checked_add(acc).ok_or(Error::Overflow))
-        })
+        .try_fold(0, |acc, n| n.and_then(|n| n.checked_add(acc)))
 }
 
-fn parse_digit(digit: char) -> crate::Result<u128> {
-    ALPHABET
-        .chars()
-        .position(|x| x == digit)
-        .map(|i| i as u128)
-        .ok_or(Error::UnknownCharacter)
+fn parse_digit(digit: u8) -> Option<u128> {
+    let digit = match digit {
+        b'1'..=b'9' => digit - b'1',
+        b'A'..=b'H' => digit - b'A' + 9,
+        b'J'..=b'N' => digit - b'J' + 17,
+        b'P'..=b'Z' => digit - b'P' + 22,
+        b'a'..=b'k' => digit - b'a' + 33,
+        b'm'..=b'z' => digit - b'm' + 44,
+        _ => return None,
+    };
+    Some(digit as u128)
 }
 
 #[cfg(test)]
 mod tests {
-    use proptest::{prelude::*, property_test, sample::SizeRange};
+    use proptest::prelude::*;
+
+    use crate::tests::prop_test;
 
     use super::*;
 
@@ -126,33 +128,45 @@ mod tests {
             .chain('a'..='z')
             .filter(|c| !blacklist.contains(c))
             .collect::<String>();
-        assert_eq!(ALPHABET, &base58);
-    }
-
-    #[property_test]
-    fn encode_is_deterministic(n: u128) {
-        let encoded = encode_str(n);
-        let decoded = decode(&encoded);
-        prop_assert!(decoded.is_ok());
-        prop_assert_eq!(n, decoded.unwrap());
+        assert_eq!(ALPHABET, base58.as_bytes());
     }
 
     #[test]
-    fn decode_is_partial() {
-        let check = |s: &str| {
-            let decoded = decode(s);
-            decoded.is_err() || decoded.is_ok_and(|ok| encode_str(ok) == s)
-        };
-        proptest!(|(s in any::<String>())| prop_assert!(check(&s)));
-        proptest!(|(s in sanitized_string())| prop_assert!(check(&s)));
+    fn digits_parse_back() {
+        let digits = (0..RADIX).collect::<Vec<_>>();
+        let parsed = digits
+            .iter()
+            .copied()
+            .map(last_digit_of)
+            .map(parse_digit)
+            .collect::<Option<Vec<_>>>();
+        assert!(parsed.is_some());
+        assert_eq!(digits, parsed.unwrap());
     }
 
-    fn encode_str(n: u128) -> String {
-        encode(n).into_iter().collect()
+    #[test]
+    fn parse_last_digit_gives_mod_radix() {
+        prop_test!(&any::<u128>(), |n| {
+            let ascii_digit = last_digit_of(n);
+            let parsed_digit = parse_digit(ascii_digit);
+            prop_assert!(parsed_digit.is_some());
+            prop_assert_eq!(n % RADIX, parsed_digit.unwrap());
+            Ok(())
+        });
     }
 
-    fn sanitized_string() -> impl Strategy<Value = String> {
-        prop::collection::vec(0..RADIX, SizeRange::default())
-            .prop_map(|digits| digits.into_iter().map(to_digit).collect())
+    #[test]
+    fn block_decodes_back() {
+        prop_test!(&any::<[u8; 16]>(), |block| {
+            let encoded = stringify(block);
+            let decoded = parse(&encoded);
+            prop_assert!(decoded.is_some());
+            prop_assert_eq!(block, decoded.unwrap());
+            Ok(())
+        });
+    }
+
+    fn stringify(block: [u8; 16]) -> String {
+        super::stringify(block).collect()
     }
 }
