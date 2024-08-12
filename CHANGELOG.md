@@ -6,6 +6,8 @@
 
 -   get rid of too expressive error variants
 -   improve parsing performance
+-   changed tagging algorithm
+    (tagged IDs now encode to completely different strings)
 
 ### Fixed
 

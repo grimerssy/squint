@@ -17,7 +17,6 @@ pub fn decrypt(block: [u8; 16], cipher: &Aes128) -> (u64, i64) {
 
 fn concat(tag: u64, id: i64) -> [u8; 16] {
     let mut block = <[u8; 16]>::default();
-    let tag = tag.reverse_bits(); // TODO remove in next breaking release
     id.to_ne_bytes()
         .into_iter()
         .chain(tag.to_le_bytes())
@@ -33,18 +32,32 @@ fn bisect(block: [u8; 16]) -> (u64, i64) {
         .chain(tag.iter_mut())
         .zip(block)
         .for_each(|(w, byte)| *w = byte);
-    let (tag, id) = (u64::from_le_bytes(tag), i64::from_le_bytes(id));
-    let tag = tag.reverse_bits(); // TODO remove in next breaking release
-    (tag, id)
+    (u64::from_le_bytes(tag), i64::from_le_bytes(id))
 }
 
 #[cfg(test)]
 mod tests {
+    use core::{fmt::Binary, mem::size_of};
+
     use proptest::prelude::*;
 
     use crate::tests::{any_cipher, prop_test};
 
     use super::*;
+
+    #[test]
+    fn binary_of_concat_is_concat_of_binaries() {
+        fn padded_binary<T: Binary>(x: T) -> String {
+            format!("{x:0size$b}", size = size_of::<T>() * 8)
+        }
+        prop_test!(&any::<(u64, i64)>(), |(tag, id)| {
+            let concatenated_binaries = [padded_binary(tag), padded_binary(id)].concat();
+            let block = concat(tag, id);
+            let block_binary = padded_binary(u128::from_le_bytes(block));
+            prop_assert_eq!(concatenated_binaries, block_binary);
+            Ok(())
+        });
+    }
 
     #[test]
     fn concat_bisect_is_identity() {

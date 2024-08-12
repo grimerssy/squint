@@ -24,7 +24,7 @@ let cipher = Aes128::new(&key.into());
 
 let id: Id = Id::new(1, &cipher);
 let encoded = id.to_string();
-assert_eq!(&encoded, "xZV3JT8xVMefhiyrkTsd4T2");
+assert_eq!("xZV3JT8xVMefhiyrkTsd4T2", &encoded);
 
 let decoded = encoded
     .parse()
@@ -51,8 +51,8 @@ let cipher = Aes128::new(&key.into());
 let user_id = UserId::new(1, &cipher);
 let crate_id = CrateId::new(1, &cipher);
 
-assert_eq!(&user_id.to_string(), "hyu17dvJtxff4YXs8ZoqoH2");
-assert_eq!(&crate_id.to_string(), "sT6MYEi1knyw8RBHrk1ShW2");
+assert_eq!("mC67zUocKZHWRXCHBr4aj52", &user_id.to_string());
+assert_eq!("oPnmjU48WRy4GNradtqYdX2", &crate_id.to_string());
 ```
 
 # Comparison
