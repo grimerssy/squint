@@ -3,14 +3,14 @@ use aes::{
     Aes128,
 };
 
-pub fn encrypt(tag: u64, id: i64, cipher: &Aes128) -> [u8; 16] {
+pub fn encrypt(tag: u64, id: i64, cipher: &Aes128) -> u128 {
     let mut block = concat(tag, id).into();
     cipher.encrypt_block(&mut block);
-    block.into()
+    u128::from_le_bytes(block.into())
 }
 
-pub fn decrypt(block: [u8; 16], cipher: &Aes128) -> (u64, i64) {
-    let mut block = block.into();
+pub fn decrypt(n: u128, cipher: &Aes128) -> (u64, i64) {
+    let mut block = n.to_le_bytes().into();
     cipher.decrypt_block(&mut block);
     bisect(block.into())
 }

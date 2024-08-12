@@ -10,10 +10,9 @@ static ALPHABET: &[u8] = b"123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstu
 
 static RADIX: u128 = ALPHABET.len() as u128;
 
-pub fn stringify(block: [u8; 16]) -> impl Iterator<Item = char> {
+pub fn stringify(n: u128) -> impl Iterator<Item = char> {
     let mut buffer = <[u8; ENCODING_LENGTH]>::default();
     let mut writer = buffer.iter_mut();
-    let n = u128::from_le_bytes(block);
     let unpadded = digits_of(n)
         .zip(writer.by_ref())
         .map(|(digit, w)| *w = digit)
@@ -24,7 +23,7 @@ pub fn stringify(block: [u8; 16]) -> impl Iterator<Item = char> {
     buffer.into_iter().map(char::from)
 }
 
-pub fn parse(digits: &str) -> Option<[u8; 16]> {
+pub fn parse(digits: &str) -> Option<u128> {
     let mut digits = match digits {
         s if s.len() != ENCODING_LENGTH => None,
         s => Some(s.bytes()),
@@ -40,7 +39,7 @@ pub fn parse(digits: &str) -> Option<[u8; 16]> {
     let n = parse_number(digits.by_ref().take(encoding_size))?;
     let filler_padding = gen_padding(n, padding_size).take(padding_size - PADDING_SIZE_LEN);
     if digits.eq(filler_padding) {
-        Some(n.to_le_bytes())
+        Some(n)
     } else {
         None
     }
@@ -157,16 +156,16 @@ mod tests {
 
     #[test]
     fn block_decodes_back() {
-        prop_test!(&any::<[u8; 16]>(), |block| {
-            let encoded = stringify(block);
+        prop_test!(&any::<u128>(), |n| {
+            let encoded = stringify(n);
             let decoded = parse(&encoded);
             prop_assert!(decoded.is_some());
-            prop_assert_eq!(block, decoded.unwrap());
+            prop_assert_eq!(n, decoded.unwrap());
             Ok(())
         });
     }
 
-    fn stringify(block: [u8; 16]) -> String {
-        super::stringify(block).collect()
+    fn stringify(n: u128) -> String {
+        super::stringify(n).collect()
     }
 }
