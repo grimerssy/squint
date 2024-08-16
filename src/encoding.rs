@@ -103,9 +103,7 @@ fn parse_digit(digit: u8) -> Option<u128> {
 
 #[cfg(test)]
 mod tests {
-    use proptest::prelude::*;
-
-    use crate::tests::prop_test;
+    use prop_test::prelude::*;
 
     use super::*;
 

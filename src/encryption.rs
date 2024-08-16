@@ -39,9 +39,8 @@ fn bisect(block: [u8; 16]) -> (u64, i64) {
 mod tests {
     use core::{fmt::Binary, mem::size_of};
 
-    use proptest::prelude::*;
-
-    use crate::tests::{any_cipher, prop_test};
+    use aes::cipher::KeyInit;
+    use prop_test::prelude::*;
 
     use super::*;
 
@@ -81,5 +80,9 @@ mod tests {
             prop_assert_eq!(x, encrypt_decrypt(x, cipher));
             Ok(())
         });
+    }
+
+    pub fn any_cipher() -> impl Strategy<Value = Aes128> {
+        any::<[u8; 16]>().prop_map(|key| Aes128::new(&key.into()))
     }
 }

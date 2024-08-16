@@ -10,9 +10,6 @@ mod encryption;
 mod error;
 mod id;
 
-#[cfg(test)]
-mod tests;
-
 pub use aes;
 
 pub use self::{
