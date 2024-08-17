@@ -19,21 +19,20 @@ even though the underlying integer value is the same).
 Basic example
 
 ```rust
-use squint::{
-    aes::{cipher::KeyInit, Aes128},
-    Id,
-};
+use squint::aes::{cipher::KeyInit, Aes128};
+
+type Id = squint::Id<0>;
 
 let key = [0; 16];
 let cipher = Aes128::new(&key.into());
 
-let id: Id = Id::new(1, &cipher);
+let id = Id::new(1, &cipher);
 let encoded = id.to_string();
 assert_eq!("xZV3JT8xVMefhiyrkTsd4T2", &encoded);
 
 let decoded = encoded
-    .parse()
-    .and_then(|id: Id| id.to_raw(&cipher))
+    .parse::<Id>()
+    .and_then(|id| id.to_raw(&cipher))
     .unwrap();
 assert_eq!(decoded, 1);
 ```

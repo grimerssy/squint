@@ -8,6 +8,7 @@
 -   improve parsing performance
 -   changed tagging algorithm
     (tagged IDs now encode to completely different strings)
+-   remove default value for const generic in `Id`
 
 ### Fixed
 

@@ -12,7 +12,7 @@ use crate::{
 };
 
 #[derive(Clone, Copy, PartialEq, Eq)]
-pub struct Id<const TAG: u64 = 0>(u128);
+pub struct Id<const TAG: u64>(u128);
 
 pub const fn tag(tag: &str) -> u64 {
     assert!(tag.len() <= 8, "tag is too long");
