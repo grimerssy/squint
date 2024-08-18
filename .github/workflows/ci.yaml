@@ -16,18 +16,17 @@ env:
 
 jobs:
   check:
-    name: check ${{ matrix.features }}
+    name: check
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        features: ["", "std", "zeroize", "std,zeroize"]
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy
-      - run: cargo clippy --no-default-features -F "${{ matrix.features }}" --tests
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-hack
+      - run: cargo hack check --feature-powerset
 
   test:
     name: test ${{matrix.os}}-${{ matrix.rust }}
