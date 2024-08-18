@@ -14,18 +14,6 @@ use crate::{
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub struct Id<const TAG: u64>(u128);
 
-pub const fn tag(tag: &str) -> u64 {
-    assert!(tag.len() <= 8, "tag is too long");
-    let mut byte_block = [0; 8];
-    let tag = tag.as_bytes();
-    let mut i = 0;
-    while i < tag.len() {
-        byte_block[i] = tag[i];
-        i += 1;
-    }
-    u64::from_be_bytes(byte_block)
-}
-
 impl<const TAG: u64> Id<TAG> {
     pub fn new(id: i64, cipher: &Aes128) -> Self {
         Self(encrypt(TAG, id, cipher))

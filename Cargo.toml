@@ -13,12 +13,14 @@ keywords = ["sql", "id", "encode", "obfuscate"]
 categories = ["cryptography", "encoding", "no-std"]
 
 [features]
-default = ["std"]
+default = ["std", "tag"]
 std = []
+tag = ["dep:const-fnv1a-hash"]
 zeroize = ["aes/zeroize"]
 
 [dependencies]
 aes = "0.8.4"
+const-fnv1a-hash = { version = "1.1.0", optional = true }
 
 [dev-dependencies]
 prop-test = "0.1.1"
@@ -28,3 +30,6 @@ opt-level = 3
 
 [profile.test.package.rand_chacha]
 opt-level = 3
+
+[package.metadata."docs.rs"]
+all-features = true

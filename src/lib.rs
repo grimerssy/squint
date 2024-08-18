@@ -10,11 +10,15 @@ mod encryption;
 mod error;
 mod id;
 
+#[cfg(feature = "tag")]
+mod tag;
+
 pub use aes;
 
-pub use self::{
-    error::Error,
-    id::{tag, Id},
-};
+pub use error::Error;
+pub use id::Id;
+
+#[cfg(feature = "tag")]
+pub use tag::tag;
 
 pub type Result<T> = core::result::Result<T, Error>;

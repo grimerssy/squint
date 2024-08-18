@@ -55,8 +55,8 @@ let cipher = Aes128::new(&key.into());
 let user_id = UserId::new(1, &cipher);
 let crate_id = CrateId::new(1, &cipher);
 
-assert_eq!("mC67zUocKZHWRXCHBr4aj52", &user_id.to_string());
-assert_eq!("oPnmjU48WRy4GNradtqYdX2", &crate_id.to_string());
+assert_eq!("qXfXkNN9ReZCGXu3qi28xC2", &user_id.to_string());
+assert_eq!("VgtE1tzjDEHnjd3fh3PwiT2", &crate_id.to_string());
 ```
 
 # Comparison
