@@ -2,6 +2,14 @@
 
 ### Added
 
+### Changed
+
+### Fixed
+
+# 0.1.4 (20 August, 2024)
+
+### Added
+
 -   allow tags longer than 8 bytes
 
 ### Changed

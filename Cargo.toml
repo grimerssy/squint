@@ -1,6 +1,6 @@
 [package]
 name = "squint"
-version = "0.1.3"
+version = "0.1.4"
 description = "Encode sequential integer ids as random looking strings"
 authors = ["Stanislav Stoyanov <grimerssy@gmail.com>"]
 license = "MIT OR Apache-2.0"
@@ -30,6 +30,3 @@ opt-level = 3
 
 [profile.test.package.rand_chacha]
 opt-level = 3
-
-[package.metadata."docs.rs"]
-all-features = true
