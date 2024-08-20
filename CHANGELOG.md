@@ -2,15 +2,19 @@
 
 ### Added
 
+-   allow tags longer than 8 bytes
+
 ### Changed
 
 -   get rid of too expressive error variants
--   improve parsing performance
+-   make tagging an optional but default feature
 -   changed tagging algorithm
     (tagged IDs now encode to completely different strings)
 -   remove default value for const generic in `Id`
 
 ### Fixed
+
+-   improve id parsing performance
 
 # 0.1.3 (28 July, 2024)
 
