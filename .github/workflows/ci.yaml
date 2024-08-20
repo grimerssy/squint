@@ -6,6 +6,7 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
     branches: main
+  schedule: [cron: "0 7 * * *"]
 
 env:
   RUSTFLAGS: -Dwarnings
@@ -16,17 +17,24 @@ env:
 
 jobs:
   check:
-    name: check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-hack
+      - run: cargo hack check --feature-powerset
+
+  lint:
+    needs: check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy
-      - uses: taiki-e/install-action@v2
-        with:
-          tool: cargo-hack
-      - run: cargo hack check --feature-powerset
+      - run: cargo clippy --all-features --benches --examples --tests
 
   test:
     name: test ${{matrix.os}}-${{ matrix.rust }}
