@@ -14,7 +14,7 @@
       {
         devShells.default = pkgs.mkShellNoCC {
           packages = with pkgs; [
-            (rust-bin.stable.latest.default.override {
+            (rust-bin.stable."1.72.0".default.override {
               extensions = [ "rust-src" "clippy" "rust-analyzer" ];
             })
             cargo-hack
