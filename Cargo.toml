@@ -24,6 +24,11 @@ const-fnv1a-hash = { version = "1.1.0", optional = true }
 
 [dev-dependencies]
 prop-test = "0.1.1"
+criterion = "0.5.1"
+
+[[bench]]
+name = "main"
+harness = false
 
 [profile.test.package.proptest]
 opt-level = 3
