@@ -11,7 +11,7 @@ fn new_id<const TAG: u64>(id: i64, cipher: &Aes128) -> impl Fn() -> Id<TAG> + '_
 
 fn reveal<const TAG: u64>(id: i64, cipher: &Aes128) -> impl Fn() -> squint::Result<i64> + '_ {
     let id = Id::<TAG>::new(id, cipher);
-    move || id.to_raw(cipher)
+    move || id.reveal(cipher)
 }
 
 fn to_string<const TAG: u64>(id: i64, cipher: &Aes128) -> impl Fn() -> String + '_ {
@@ -30,5 +30,5 @@ fn encode<const TAG: u64>(id: i64, cipher: &Aes128) -> impl Fn() -> String + '_ 
 
 fn decode<const TAG: u64>(id: i64, cipher: &Aes128) -> impl Fn() -> squint::Result<i64> + '_ {
     let id = Id::<TAG>::new(id, cipher).to_string();
-    move || id.parse().and_then(|id: Id<TAG>| id.to_raw(cipher))
+    move || id.parse().and_then(|id: Id<TAG>| id.reveal(cipher))
 }

@@ -32,7 +32,7 @@ assert_eq!("xZV3JT8xVMefhiyrkTsd4T2", &encoded);
 
 let decoded = encoded
     .parse::<Id>()
-    .and_then(|id| id.to_raw(&cipher))
+    .and_then(|id| id.reveal(&cipher))
     .unwrap();
 assert_eq!(decoded, 1);
 ```

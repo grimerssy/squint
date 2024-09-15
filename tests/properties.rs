@@ -10,7 +10,7 @@ fn id_to_string_and_back<const TAG: u64>(id: i64, cipher: &Aes128) -> squint::Re
     Id::<TAG>::new(id, cipher)
         .to_string()
         .parse()
-        .and_then(|id: Id<TAG>| id.to_raw(cipher))
+        .and_then(|id: Id<TAG>| id.reveal(cipher))
 }
 
 #[test]

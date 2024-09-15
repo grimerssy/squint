@@ -19,7 +19,7 @@ impl<const TAG: u64> Id<TAG> {
         Self(encrypt(TAG, id, cipher))
     }
 
-    pub fn to_raw(self, cipher: &Aes128) -> crate::Result<i64> {
+    pub fn reveal(self, cipher: &Aes128) -> crate::Result<i64> {
         match decrypt(self.0, cipher) {
             (tag, id) if tag == TAG => Ok(id),
             _ => Err(Error::TagMismatch),

@@ -4,6 +4,8 @@
 
 ### Changed
 
+-   rename `Id::to_raw` to `Id::reveal`
+
 ### Fixed
 
 # 0.1.4 (20 August, 2024)
